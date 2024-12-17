@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven 3.8.5'
+    }
+
+    environment {
+        STAGE_ENV = "staging"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "Checking out code..."
+                git branch: 'develop', url: 'https://github.com/example/maven-project.git'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                echo "Compiling the project..."
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running tests..."
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo "Packaging the application..."
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                echo "Deploying to ${STAGE_ENV}..."
+                sh 'scp target/myapp.war user@staging-server:/deploy/path/'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline run completed!"
+        }
+    }
+}
